@@ -1,8 +1,10 @@
 import express from "express";
 import {Request, Response, NextFunction} from "express"
+import middlewareMetricsInc from "./config.js"
 const app = express();
 const PORT = 8080;
-app.use(middlewareLogResponses)
+app.use(middlewareLogResponses, middlewareMetricsInc)
+
 function handlerReadiness(req : Request, res:Response, next : NextFunction){
     res.set({"Content-type": "text/plain"})
     res.send({"body": "OK"})
