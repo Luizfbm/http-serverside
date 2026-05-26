@@ -5,26 +5,32 @@ type APIConfig = {
 };
 
 const app = express()
-let x = 0
 const config : APIConfig = {
     fileserverHits: 0
 }
-function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
-    
-    res.on("finish", () => {
-        config.fileserverHits = config.fileserverHits + 1 
-        console.log("Hits: ", config.fileserverHits)
-        return x
-    })
-
-    app.use("/metrics",(req, res, next)=>{
-    res.send(config.fileserverHits)
-} )
-    app.use("/reset",(req, res, next)=>{
-    config.fileserverHits = 0
-    res.send(config.fileserverHits)
-})
+export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
+    config.fileserverHits += 1
     next()
+    return config.fileserverHits
+    
+}
+export function reset(req: Request, res: Response, next: NextFunction){
+    res.send(config.fileserverHits = 0)
+    return config.fileserverHits
 }
 
-export default middlewareMetricsInc
+export function metrics(req: Request, res: Response, next: NextFunction){
+    res.set({"Content-type": "text/html"})
+    res.send(`
+    <html>
+        <body>
+            <h1>Welcome, Chirpy Admin</h1>
+            <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+        </body>
+    </html>`
+)
+    //res.send(`Chirpy has been visited ${config.fileserverHits} times!`)
+    //res.send(`Hits: ${config.fileserverHits}`
+    return config.fileserverHits
+    
+}
