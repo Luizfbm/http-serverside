@@ -3,6 +3,7 @@ import {Request, Response, NextFunction} from "express"
 import {middlewareMetricsInc, reset,metrics } from "./config.js"
 const app = express();
 const PORT = 8080;
+
 app.use(middlewareLogResponses)
 
 function handlerReadiness(req : Request, res:Response, next : NextFunction){
@@ -19,21 +20,30 @@ function middlewareLogResponses(req: Request,res: Response, next: NextFunction){
     next()
   }
 
-async function handler(req: Request,res: Response, next: NextFunction){
-  let body = ""
+/* async function handler(req: Request,res: Response, next: NextFunction){
+  type reqBody = {
+    body : string
+  }
+  let bodyS = ""
   req.on("data",(chunck)=>{
-    body += chunck
+    bodyS += chunck
   })
   req.on("end",()=>{
     try{
-      const parseBody = JSON.parse(body)
-      res.send
+      const parseBody  = JSON.parse(bodyS)
     }catch(error){
-      res.status(400).send("invalid JSON")
+      res.status(400).send({"error": "Chirp is too long"})
     }
   })
-}
-app.post("/api/validate_chirp", handler)
+} */
+/* app.get("/api/validate_chirp", (req, res)=>{
+  console.log(req.body)
+  res.send("works")
+}) */
+app.post("/api/validate_chirp", (req, res)=>{
+  console.log(req.body)
+  res.send("works")
+})
 app.get("/admin/metrics",metrics)
 app.post("/admin/reset", reset)
 
