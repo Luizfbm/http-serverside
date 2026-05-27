@@ -5,6 +5,7 @@ const app = express();
 const PORT = 8080;
 
 app.use(middlewareLogResponses)
+app.use(express.json())
 
 function handlerReadiness(req : Request, res:Response, next : NextFunction){
     res.set({"Content-type": "text/plain"})
@@ -20,30 +21,21 @@ function middlewareLogResponses(req: Request,res: Response, next: NextFunction){
     next()
   }
 
-/* async function handler(req: Request,res: Response, next: NextFunction){
+async function handler(req: Request,res: Response, next: NextFunction){
   type reqBody = {
     body : string
   }
-  let bodyS = ""
-  req.on("data",(chunck)=>{
-    bodyS += chunck
-  })
-  req.on("end",()=>{
-    try{
-      const parseBody  = JSON.parse(bodyS)
-    }catch(error){
-      res.status(400).send({"error": "Chirp is too long"})
-    }
-  })
-} */
+  const parseBody : reqBody  = req.body
+  if (parseBody.body.length > 140){
+    res.status(400).json({ "error": 'Chirp is too long' });
+  }
+    res.send({"valid": true})
+}
 /* app.get("/api/validate_chirp", (req, res)=>{
   console.log(req.body)
   res.send("works")
 }) */
-app.post("/api/validate_chirp", (req, res)=>{
-  console.log(req.body)
-  res.send("works")
-})
+app.post("/api/validate_chirp",handler)
 app.get("/admin/metrics",metrics)
 app.post("/admin/reset", reset)
 
