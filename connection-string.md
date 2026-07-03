@@ -1,0 +1,1 @@
+psql postgres://luiz_fbm:@localhost:5432/chirpy

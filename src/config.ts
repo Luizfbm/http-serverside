@@ -1,11 +1,14 @@
 import express  from "express"
 import {Request , Response, NextFunction } from "express"
+process.loadEnvFile()
 type APIConfig = {
-  fileserverHits: number;
+    dbURL : string, 
+    fileserverHits: number;
 };
 
 const app = express()
 const config : APIConfig = {
+    dbURL: process.env.DB_URL,
     fileserverHits: 0
 }
 export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
