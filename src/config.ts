@@ -7,8 +7,15 @@ type APIConfig = {
 };
 
 const app = express()
-const config : APIConfig = {
-    dbURL: process.env.DB_URL,
+const envOrThrow = (key: string | undefined) => {
+    if (typeof key !== 'string'){
+        throw new Error 
+    }
+    return key
+}
+const dbValidate = envOrThrow(process.env.DB_URL)
+export const config : APIConfig = {
+    dbURL: dbValidate,
     fileserverHits: 0
 }
 export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
