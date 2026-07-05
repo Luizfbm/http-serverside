@@ -1,8 +1,19 @@
 import express  from "express"
 import {Request , Response, NextFunction } from "express"
+import type {MigrationConfig} from "drizzle-orm/migrator"
+
+
 process.loadEnvFile()
+const migrationConfig: MigrationConfig = {
+  migrationsFolder: "./src/db/migrations",
+};
+
+type DBConfig = {
+    db: {url : string},
+    migrationConfig: string
+}
+
 type APIConfig = {
-    dbURL : string, 
     fileserverHits: number;
 };
 
@@ -14,9 +25,13 @@ const envOrThrow = (key: string | undefined) => {
     return key
 }
 const dbValidate = envOrThrow(process.env.DB_URL)
-export const config : APIConfig = {
-    dbURL: dbValidate,
-    fileserverHits: 0
+export const config : DBConfig & APIConfig = {
+    db: {
+        url : dbValidate,
+
+    },
+    fileserverHits: 0,
+    migrationConfig : migrationConfig.migrationsFolder
 }
 export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
     config.fileserverHits += 1

@@ -1,11 +1,18 @@
 import express from "express";
 import {Request, Response, NextFunction} from "express"
 import {middlewareMetricsInc, reset,metrics } from "./config.js"
+import postgres from "postgres";
+import {migrate } from "drizzle-orm/postgres-js/migrator";
+import {drizzle} from "drizzle-orm/postgres-js"
+import {config} from "./config.js"
+
+const migrationClient = postgres(config.db)
 const app = express();
 const PORT = 8080;
 
 app.use(middlewareLogResponses)
 app.use(express.json())
+
 
 class BadRequestError extends Error{
   constructor(message: string){
