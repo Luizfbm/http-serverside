@@ -4,6 +4,7 @@ import type {MigrationConfig} from "drizzle-orm/migrator"
 
 
 process.loadEnvFile()
+
 const migrationConfig: MigrationConfig = {
   migrationsFolder: "./src/db/migrations",
 };
@@ -12,14 +13,13 @@ type DBConfig = {
     db: {
         url : string,
         migrationConfig : MigrationConfig
-    },
+    }
 }
 
 type APIConfig = {
     fileserverHits: number;
 };
 
-const app = express()
 const envOrThrow = (key: string | undefined) => {
     if (typeof key !== 'string'){
         throw new Error 
@@ -27,6 +27,7 @@ const envOrThrow = (key: string | undefined) => {
     return key
 }
 const dbValidate = envOrThrow(process.env.DB_URL)
+
 export const config : DBConfig & APIConfig = {
     db: {
         url : dbValidate,
@@ -34,29 +35,6 @@ export const config : DBConfig & APIConfig = {
     },
     fileserverHits: 0,
 }
-export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
-    config.fileserverHits += 1
-    next()
-    return config.fileserverHits
-    
-}
-export function reset(req: Request, res: Response, next: NextFunction){
-    res.send(config.fileserverHits = 0)
-    return config.fileserverHits
-}
 
-export function metrics(req: Request, res: Response, next: NextFunction){
-    res.set({"Content-type": "text/html"})
-    res.send(`
-    <html>
-        <body>
-            <h1>Welcome, Chirpy Admin</h1>
-            <p>Chirpy has been visited ${config.fileserverHits} times!</p>
-        </body>
-    </html>`
-)
-    //res.send(`Chirpy has been visited ${config.fileserverHits} times!`)
-    //res.send(`Hits: ${config.fileserverHits}`
-    return config.fileserverHits
-    
-}
+
+

@@ -1,6 +1,4 @@
 import express from "express";
-import {Request, Response, NextFunction} from "express"
-import {middlewareMetricsInc, reset,metrics } from "./config.js"
 import postgres from "postgres";
 import {migrate } from "drizzle-orm/postgres-js/migrator";
 import {drizzle} from "drizzle-orm/postgres-js"
@@ -8,7 +6,9 @@ import {config} from "./config.js"
 import {apiRouter} from './routes/api.js'
 import {adminRouter} from './routes/admin.js'
 import {appRouter} from './routes/app.js'
-import {errorHandler} from "./controllers/errors.js"
+import {errorHandler} from "./errors.js"
+import {middlewareLogResponses} from "./controllers/chirps.js"
+
 
 const migrationClient = postgres(config.db.url,{max:1})
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
@@ -19,76 +19,15 @@ app.use(middlewareLogResponses)
 app.use(express.json())
 
 
-class BadRequestError extends Error{
-  constructor(message: string){
-    super(message)
-  }
-}
-class Unauthorized extends Error{
-  constructor(message: string){
-    super(message)
-  }
-}
-class Forbidden extends Error{
-  constructor(message: string){
-    super(message)
-  }
-}
+app.get("/api/healthz",apiRouter);
 
-class NotFoundError extends Error{
-  constructor(message: string){
-    super(message)
-  }
-}
+app.use("/app",appRouter, express.static("./src/app"));
 
-function handlerReadiness(req : Request, res:Response, next : NextFunction){
-    res.set({"Content-type": "text/plain"})
-    res.send({"body": "OK"})
-}
+app.post("/api/validate_chirp",apiRouter)
 
-app.get("/api/healthz",apiRouter,handlerReadiness);
+app.get("/admin/metrics",adminRouter)
 
-app.use("/app",middlewareMetricsInc, express.static("./src/app"));
-
-function middlewareLogResponses(req: Request,res: Response, next: NextFunction){
-  res.on("finish", () => {
-      console.log(`Method: ${req.method} - Route: ${req.url} - Status: ${res.statusCode}`)
-    })
-    next()
-}
-
-async function handler(req: Request,res: Response, next: NextFunction){
-  type reqBody = {
-    body : string
-  }
-  const profane = ["kerfuffle","sharbert","fornax"]
-  const parseBody : reqBody  = req.body
-
-  const clean = () =>{
-    const words = parseBody.body.split(" ")
-    let word = 0
-    while (word < words.length){
-      if (profane.includes(words[word].toLowerCase())){
-        words[word] = "****"
-      }
-      word++
-    }
-    return words.join(" ")
-    }
-
-    if (parseBody.body.length > 140){
-      throw new BadRequestError("Chirp is too long. Max length is 140")
-      res.status(400).json({ "error": 'Chirp is too long' });
-    }else{
-      res.send({"cleanedBody": clean()})
-    }
-  }
-
-app.post("/api/validate_chirp",handler)
-
-app.get("/admin/metrics",metrics)
-
-app.post("/admin/reset", reset)
+app.post("/admin/reset", adminRouter)
 
 
 app.use(errorHandler)
