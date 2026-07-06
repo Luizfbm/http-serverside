@@ -5,8 +5,13 @@ import postgres from "postgres";
 import {migrate } from "drizzle-orm/postgres-js/migrator";
 import {drizzle} from "drizzle-orm/postgres-js"
 import {config} from "./config.js"
+import {apiRouter} from './routes/api.js'
+import {adminRouter} from './routes/admin.js'
+import {appRouter} from './routes/app.js'
+import {errorHandler} from "./controllers/errors.js"
 
-const migrationClient = postgres(config.db)
+const migrationClient = postgres(config.db.url,{max:1})
+await migrate(drizzle(migrationClient), config.db.migrationConfig);
 const app = express();
 const PORT = 8080;
 
@@ -41,7 +46,7 @@ function handlerReadiness(req : Request, res:Response, next : NextFunction){
     res.send({"body": "OK"})
 }
 
-app.get("/api/healthz",handlerReadiness);
+app.get("/api/healthz",apiRouter,handlerReadiness);
 
 app.use("/app",middlewareMetricsInc, express.static("./src/app"));
 
@@ -85,19 +90,6 @@ app.get("/admin/metrics",metrics)
 
 app.post("/admin/reset", reset)
 
-async function errorHandler (err: Error, req: Request, res: Response, next: NextFunction){
-  if(err instanceof BadRequestError){
-    res.status(400).send({"error" : "Chirp is too long. Max length is 140"})
-  }
-  if(err instanceof Unauthorized){
-    res.status(401).send()
-  }
-  if(err instanceof Forbidden){
-    res.status(403).send()
-  }
-  if(err instanceof NotFoundError){
-    res.status(404).send({"error": "Something went wrong on our end"})}
-}
 
 app.use(errorHandler)
 app.listen(PORT

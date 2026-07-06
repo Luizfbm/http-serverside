@@ -9,8 +9,10 @@ const migrationConfig: MigrationConfig = {
 };
 
 type DBConfig = {
-    db: {url : string},
-    migrationConfig: string
+    db: {
+        url : string,
+        migrationConfig : MigrationConfig
+    },
 }
 
 type APIConfig = {
@@ -28,10 +30,9 @@ const dbValidate = envOrThrow(process.env.DB_URL)
 export const config : DBConfig & APIConfig = {
     db: {
         url : dbValidate,
-
+        migrationConfig : migrationConfig
     },
     fileserverHits: 0,
-    migrationConfig : migrationConfig.migrationsFolder
 }
 export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
     config.fileserverHits += 1
