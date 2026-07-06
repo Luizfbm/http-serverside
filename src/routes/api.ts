@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import {handlerReadiness} from "../controllers/healthz.js"
-import {errorHandler, BadRequestError, handler} from "../errors.js"
+import {handler} from "../errors.js"
 export const apiRouter = Router()
 
 apiRouter.get("/healthz",handlerReadiness);
