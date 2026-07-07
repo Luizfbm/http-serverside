@@ -1,5 +1,7 @@
 import {Request, Response, NextFunction} from "express"
 import {config} from "../config.js"
+import {users} from "../db/schema.js"
+import {db} from "../db/index.js"
 
 export function metrics(req: Request, res: Response, next: NextFunction){
     res.set({"Content-type": "text/html"})
@@ -16,7 +18,8 @@ export function metrics(req: Request, res: Response, next: NextFunction){
     return config.fileserverHits
     
 }
-export function reset(req: Request, res: Response, next: NextFunction){
-    res.send(config.fileserverHits = 0)
-    return config.fileserverHits
+export async function reset(req: Request, res: Response, next: NextFunction){
+    await db.delete(users)
+    config.fileserverHits = 0
+    res.sendStatus(200).send(config.fileserverHits)
 }
