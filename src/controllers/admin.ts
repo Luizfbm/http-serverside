@@ -20,9 +20,3 @@ export function reset(req: Request, res: Response, next: NextFunction){
     res.send(config.fileserverHits = 0)
     return config.fileserverHits
 }
-export function middlewareMetricsInc(req: Request, res: Response, next: NextFunction) {
-    config.fileserverHits += 1
-    next()
-    return config.fileserverHits
-    
-}

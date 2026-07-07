@@ -7,7 +7,7 @@ import {apiRouter} from './routes/api.js'
 import {adminRouter} from './routes/admin.js'
 import {appRouter} from './routes/app.js'
 import {errorHandler} from "./errors.js"
-import {middlewareLogResponses} from "./controllers/chirps.js"
+import {middlewareLogResponses} from "./middleware/logging.js"
 
 
 const migrationClient = postgres(config.db.url,{max:1})
@@ -19,15 +19,11 @@ app.use(middlewareLogResponses)
 app.use(express.json())
 
 
-app.get("/api/healthz",apiRouter);
+app.use("/api",apiRouter);
 
-app.use("/app",appRouter, express.static("./src/app"));
+app.use("/app",appRouter);
 
-app.post("/api/validate_chirp",apiRouter)
-
-app.get("/admin/metrics",adminRouter)
-
-app.post("/admin/reset", adminRouter)
+app.use("/admin", adminRouter)
 
 
 app.use(errorHandler)

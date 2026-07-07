@@ -4,10 +4,6 @@ import {metrics, reset} from "../controllers/admin.js"
 
 export const adminRouter = Router()
 
-adminRouter.get("/",metrics)
-
-adminRouter.post("/", reset)
-
 adminRouter.get("/metrics",metrics)
 
 adminRouter.post("/reset", reset)

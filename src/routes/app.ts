@@ -1,5 +1,6 @@
 import {Router} from 'express'
-import {middlewareMetricsInc} from "../controllers/admin.js"
+import {middlewareMetricsInc} from "../middleware/metrics.js"
+import express from "express"
 export const appRouter = Router()
 
-appRouter.use("/",middlewareMetricsInc);
+appRouter.use("/",middlewareMetricsInc, express.static("./src/app"));
