@@ -16,6 +16,6 @@ export const chirps = pgTable("chirps",{
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updateAt: timestamp("updated_at").notNull().defaultNow(),
     body: varchar("message",{length : 256 }).unique().notNull(),
-    user_id : uuid("user_id").references(()=>users.id)
+    userId : uuid("user_id").references(()=>users.id,{onDelete: 'cascade'})
 })
 export type NewChirp = typeof chirps.$inferInsert;

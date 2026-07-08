@@ -1,35 +1,48 @@
 import {Request, Response, NextFunction} from "express"
 import { BadRequestError } from "../errors.js"
 import { createUser } from "../db/queries/user.js"
+import { createChirp } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp} from "../db/schema.js"
 
-export async function handler(req: Request,res: Response, next: NextFunction){    
-  type reqBody = {
-    body : string
-    userId : string
+type reqBody = {
+  body : string
+  userId : string
+}
+const profane = ["kerfuffle","sharbert","fornax"]
+
+const clean = (bodyReq: string) =>{
+  const words = bodyReq.split(" ")
+  let word = 0
+  while (word < words.length){
+    if (profane.includes(words[word].toLowerCase())){
+      words[word] = "****"
+    }
+    word++
   }
-  const profane = ["kerfuffle","sharbert","fornax"]
-  const parseBody : reqBody  = req.body
+  return words.join(" ")
+  }
 
-  const clean = () =>{
-    const words = parseBody.body.split(" ")
-    let word = 0
-    while (word < words.length){
-      if (profane.includes(words[word].toLowerCase())){
-        words[word] = "****"
-      }
-      word++
-    }
-    return words.join(" ")
-    }
-
-    if (parseBody.body.length > 140){
-        throw new BadRequestError("Chirp is too long. Max length is 140")
+function handler(bodyHandler: string){    
+  if (bodyHandler.length > 140){
+      throw new BadRequestError("Chirp is too long. Max length is 140")
     }else{
-        res.send({"cleanedBody": clean()})
+        return clean(bodyHandler)
     }
-  }
-  export async function createUserController(req: Request, res: Response){
+}
+
+export async function createChirpController(req: Request, res: Response, next: NextFunction){
+    const messageChirp: NewChirp = {
+        body : handler(req.body.body),
+        userId : req.body.userId
+    }
+    if (!messageChirp.body){
+        next()
+    }
+    const createdChirp = await createChirp(messageChirp)
+    res.status(201).send(createdChirp)
+}
+
+export async function createUserController(req: Request, res: Response){
     const createWithEmail: NewUser = await {email: req.body.email};
     const createdUser = await createUser(createWithEmail);
     res.status(201).send(createdUser)
