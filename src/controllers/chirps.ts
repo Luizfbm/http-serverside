@@ -1,11 +1,12 @@
 import {Request, Response, NextFunction} from "express"
 import { BadRequestError } from "../errors.js"
-import {NewUser, users} from "../db/schema.js"
-import {db} from "../db/index.js"
+import { createUser } from "../db/queries/user.js"
+import type {NewUser, NewChirp} from "../db/schema.js"
 
 export async function handler(req: Request,res: Response, next: NextFunction){    
   type reqBody = {
     body : string
+    userId : string
   }
   const profane = ["kerfuffle","sharbert","fornax"]
   const parseBody : reqBody  = req.body
@@ -25,17 +26,11 @@ export async function handler(req: Request,res: Response, next: NextFunction){
     if (parseBody.body.length > 140){
         throw new BadRequestError("Chirp is too long. Max length is 140")
     }else{
-      res.send({"cleanedBody": clean()})
+        res.send({"cleanedBody": clean()})
     }
   }
-
-const insertUser = async (user : NewUser) =>{
-    return await db.insert(users).values(user)
-}
-export async function createUser(req: Request, res : Response){
-    const newUser : NewUser= {email : req.body.email}
-    await insertUser(newUser)
-    const result = await db.select().from(users)
-    console.log(result)
-    res.status(201).send(result)
-}
+  export async function createUserController(req: Request, res: Response){
+    const createWithEmail: NewUser = await {email: req.body.email};
+    const createdUser = await createUser(createWithEmail);
+    res.status(201).send(createdUser)
+  }

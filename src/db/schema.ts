@@ -10,3 +10,12 @@ export const users = pgTable("users",{
     email: varchar("email", {length : 256}).unique().notNull(),
 });
 export type NewUser = typeof users.$inferInsert;
+
+export const chirps = pgTable("chirps",{
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updateAt: timestamp("updated_at").notNull().defaultNow(),
+    body: varchar("message",{length : 256 }).unique().notNull(),
+    user_id : uuid("user_id").references(()=>users.id)
+})
+export type NewChirp = typeof chirps.$inferInsert;
