@@ -8,6 +8,13 @@
       "when": 1783087441888,
       "tag": "0000_lying_arclight",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783597524767,
+      "tag": "0001_pink_vanisher",
+      "breakpoints": true
     }
   ]
 }
