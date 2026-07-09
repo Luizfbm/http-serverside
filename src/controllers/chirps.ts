@@ -3,6 +3,7 @@ import { BadRequestError } from "../errors.js"
 import { createUser } from "../db/queries/user.js"
 import { createChirp } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp} from "../db/schema.js"
+import {getAllChirps} from "../db/queries/chirps.js"
 
 type reqBody = {
   body : string
@@ -47,3 +48,8 @@ export async function createUserController(req: Request, res: Response){
     const createdUser = await createUser(createWithEmail);
     res.status(201).send(createdUser)
   }
+export async function getChirpsController(req: Request, res: Response){
+
+    console.log(await getAllChirps())
+    res.status(200).send(await getAllChirps())
+}   
