@@ -15,6 +15,13 @@
       "when": 1783597524767,
       "tag": "0001_pink_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784417773293,
+      "tag": "0002_wonderful_violations",
+      "breakpoints": true
     }
   ]
 }

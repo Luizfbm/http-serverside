@@ -3,6 +3,7 @@ import { BadRequestError } from "../errors.js"
 import { createUser } from "../db/queries/user.js"
 import { createChirp, getAllChirps, getChirpById } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp} from "../db/schema.js"
+import {hashPassword, checkPasswordHash} from "../db/auth.js"
 
 type reqBody = {
   body : string
@@ -43,8 +44,12 @@ export async function createChirpController(req: Request, res: Response, next: N
 }
 
 export async function createUserController(req: Request, res: Response){
-    const createWithEmail: NewUser = await {email: req.body.email};
-    const createdUser = await createUser(createWithEmail);
+    const createWithEmailPass: NewUser = {
+      password : typeof req.body.password == "string" ? await hashPassword(req.body.password): "unset",
+      email: req.body.email 
+    };
+    console.log(createWithEmailPass.password)
+    const createdUser = await createUser(createWithEmailPass);
     res.status(201).send(createdUser)
   }
 export async function getChirpsController(req: Request, res: Response){
