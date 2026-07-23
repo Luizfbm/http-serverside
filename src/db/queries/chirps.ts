@@ -26,3 +26,4 @@ export async function getChirpById(idChirp:string){
         .where(eq(chirps.id, idChirp))
     return result;
 }
+

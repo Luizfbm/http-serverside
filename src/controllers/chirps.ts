@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from "express"
-import { BadRequestError } from "../errors.js"
-import { createUser } from "../db/queries/user.js"
+import { BadRequestError, Unauthorized } from "../errors.js"
+import { createUser, getUserByEmail } from "../db/queries/user.js"
 import { createChirp, getAllChirps, getChirpById } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp} from "../db/schema.js"
 import {hashPassword, checkPasswordHash} from "../db/auth.js"
@@ -9,6 +9,8 @@ type reqBody = {
   body : string
   userId : string
 }
+type UserResponse = Omit<NewUser, "password">
+
 const profane = ["kerfuffle","sharbert","fornax"]
 
 const clean = (bodyReq: string) =>{
@@ -27,23 +29,23 @@ function handler(bodyHandler: string){
   if (bodyHandler.length > 140){
       throw new BadRequestError("Chirp is too long. Max length is 140")
     }else{
-        return clean(bodyHandler)
+      return clean(bodyHandler)
     }
-}
-
-export async function createChirpController(req: Request, res: Response, next: NextFunction){
+  }
+  
+  export async function createChirpController(req: Request, res: Response, next: NextFunction){
     const messageChirp: NewChirp = {
-        body : handler(req.body.body),
-        userId : req.body.userId
+      body : handler(req.body.body),
+      userId : req.body.userId
     }
     if (!messageChirp.body){
-        next()
+      next()
     }
     const createdChirp = await createChirp(messageChirp)
     res.status(201).send(createdChirp)
-}
-
-export async function createUserController(req: Request, res: Response){
+  }
+  
+  export async function createUserController(req: Request, res: Response){
     const createWithEmailPass: NewUser = {
       password : typeof req.body.password == "string" ? await hashPassword(req.body.password): "unset",
       email: req.body.email 
@@ -52,10 +54,12 @@ export async function createUserController(req: Request, res: Response){
     const createdUser = await createUser(createWithEmailPass);
     res.status(201).send(createdUser)
   }
+
 export async function getChirpsController(req: Request, res: Response){
     console.log(await getAllChirps())
     res.status(200).send(await getAllChirps())
-}  
+}
+
 async function validateIdChirp (idChirp:string | string[]) {
     if (typeof idChirp == "string"){
     const result = await getChirpById(idChirp)
@@ -63,8 +67,20 @@ async function validateIdChirp (idChirp:string | string[]) {
   }
     throw new BadRequestError("This id don't exists")
 }
+
 export async function getChirpsByIdController(req: Request, res: Response){
   const chirpId = await validateIdChirp(req.params.id)
   const message = chirpId.message
   res.status(200).send({body : message})
 } 
+
+export async function loginController(req: Request, res: Response){
+  const userEmail = await getUserByEmail(req.body.email)
+  if (userEmail == null){
+    throw new Unauthorized("This email don't exists")
+  }
+  checkPasswordHash(req.body.password, userEmail.password)
+  const userVerified : UserResponse = userEmail
+  console.log(userVerified)
+  res.status(200).send(userVerified)
+}
