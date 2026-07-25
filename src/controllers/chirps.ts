@@ -2,14 +2,13 @@ import {Request, Response, NextFunction} from "express"
 import { BadRequestError, Unauthorized } from "../errors.js"
 import { createUser, getUserByEmail,getUserByPass } from "../db/queries/user.js"
 import { createChirp, getAllChirps, getChirpById } from "../db/queries/chirps.js"
-import type {NewUser, NewChirp} from "../db/schema.js"
+import type {NewUser, NewChirp, UserResponse} from "../db/schema.js"
 import {hashPassword, checkPasswordHash} from "../db/auth.js"
 
 type reqBody = {
   body : string
   userId : string
 }
-type UserResponse = Omit<NewUser, "password">
 
 const profane = ["kerfuffle","sharbert","fornax"]
 
@@ -51,8 +50,13 @@ function handler(bodyHandler: string){
       email: req.body.email 
     };
     console.log(createWithEmailPass.password)
-    const createdUser = await createUser(createWithEmailPass);
-    res.status(201).send(createdUser)
+    const createdUser : UserResponse = await createUser(createWithEmailPass);
+    res.status(201).send({
+      id:createdUser.id,
+      createdAt: createdUser.createdAt,
+      updatedAt: createdUser.updatedAt,
+      email: createdUser.email
+    })
   }
 
 export async function getChirpsController(req: Request, res: Response){
@@ -75,12 +79,23 @@ export async function getChirpsByIdController(req: Request, res: Response){
 } 
 
 export async function loginController(req: Request, res: Response){
-  const userEmail = await getUserByEmail(req.body.email)
-  if (userEmail == null){
+  console.log(req.body.password)
+  const userEmail = await getUserByEmail(req.body.body)
+  console.log(userEmail)
+  if (userEmail == undefined){
     throw new Unauthorized("This email don't exists")
   }
-  checkPasswordHash(req.body.password, userEmail.password)
-  const userVerified : UserResponse = userEmail
+  console.log(userEmail)
+  const resultVal = await checkPasswordHash(req.body.password, userEmail.password)
+  if(resultVal == false){
+     throw new BadRequestError("401")
+  }
+  const userVerified = userEmail
   console.log(userVerified)
-  res.status(200).send(userVerified)
+  res.status(200).send({
+      id:userVerified.id,
+      createdAt: userVerified.createdAt,
+      updatedAt: userVerified.updatedAt,
+      email: userVerified.email
+    })
 }
