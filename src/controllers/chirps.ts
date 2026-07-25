@@ -3,7 +3,7 @@ import { BadRequestError, Unauthorized } from "../errors.js"
 import { createUser, getUserByEmail,getUserByPass } from "../db/queries/user.js"
 import { createChirp, getAllChirps, getChirpById } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp, UserResponse} from "../db/schema.js"
-import {hashPassword, checkPasswordHash} from "../db/auth.js"
+
 
 type reqBody = {
   body : string
@@ -43,21 +43,6 @@ function handler(bodyHandler: string){
     const createdChirp = await createChirp(messageChirp)
     res.status(201).send(createdChirp)
   }
-  
-  export async function createUserController(req: Request, res: Response){
-    const createWithEmailPass: NewUser = {
-      password : typeof req.body.password == "string" ? await hashPassword(req.body.password): "unset",
-      email: req.body.email 
-    };
-    console.log(createWithEmailPass.password)
-    const createdUser : UserResponse = await createUser(createWithEmailPass);
-    res.status(201).send({
-      id:createdUser.id,
-      createdAt: createdUser.createdAt,
-      updatedAt: createdUser.updatedAt,
-      email: createdUser.email
-    })
-  }
 
 export async function getChirpsController(req: Request, res: Response){
     console.log(await getAllChirps())
@@ -77,25 +62,3 @@ export async function getChirpsByIdController(req: Request, res: Response){
   const message = chirpId.message
   res.status(200).send({body : message})
 } 
-
-export async function loginController(req: Request, res: Response){
-  console.log(req.body.password)
-  const userEmail = await getUserByEmail(req.body.body)
-  console.log(userEmail)
-  if (userEmail == undefined){
-    throw new Unauthorized("This email don't exists")
-  }
-  console.log(userEmail)
-  const resultVal = await checkPasswordHash(req.body.password, userEmail.password)
-  if(resultVal == false){
-     throw new BadRequestError("401")
-  }
-  const userVerified = userEmail
-  console.log(userVerified)
-  res.status(200).send({
-      id:userVerified.id,
-      createdAt: userVerified.createdAt,
-      updatedAt: userVerified.updatedAt,
-      email: userVerified.email
-    })
-}
