@@ -9,7 +9,6 @@
       password : typeof req.body.password == "string" ? await hashPassword(req.body.password): "unset",
       email: req.body.email 
     };
-    console.log(createWithEmailPass.password)
     const createdUser : UserResponse = await createUser(createWithEmailPass);
     res.status(201).send({
       id:createdUser.id,
@@ -21,7 +20,7 @@
 
 export async function loginController(req: Request, res: Response){
   const userEmail = await getUserByEmail(req.body.email)
-  if (userEmail.email == undefined){
+  if (!userEmail.email){
     throw new Unauthorized("This email don't exists")
   }
   if(await checkPasswordHash(userEmail.password,req.body.password) == false){
