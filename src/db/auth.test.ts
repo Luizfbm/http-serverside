@@ -1,0 +1,33 @@
+import { describe, it, expect, beforeAll } from "vitest";
+import { makeJWT, validateJWT, hashPassword, checkPasswordHash} from "./auth.js";
+
+describe("Password Hashing", () => {
+  const password1 = "correctPassword123!";
+  const password2 = "anotherPassword456!";
+  let hash1: string;
+  let hash2: string;
+
+  beforeAll(async () => {
+    hash1 = await hashPassword(password1);
+    hash2 = await hashPassword(password2);
+  });
+
+  it("should return true for the correct password", async () => {
+    const result = await checkPasswordHash(password1, hash1);
+    expect(result).toBe(true);
+  });
+});
+
+describe("Jwt creation", () => {
+  const userId = "Luizfbm";
+  let mJWT:string;
+  const key = "BC"
+  beforeAll(async () => {
+    mJWT = makeJWT(userId, 2000, key);
+  });
+    it("should return the payload", async()=> {
+    const result = validateJWT(mJWT, "BC",)
+    const resultJson = JSON.parse(result)
+    expect(resultJson.sub).toBe(userId)
+})
+})

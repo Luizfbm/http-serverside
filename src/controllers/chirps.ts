@@ -4,7 +4,6 @@ import { createUser, getUserByEmail,getUserByPass } from "../db/queries/user.js"
 import { createChirp, getAllChirps, getChirpById } from "../db/queries/chirps.js"
 import type {NewUser, NewChirp, UserResponse} from "../db/schema.js"
 
-
 type reqBody = {
   body : string
   userId : string

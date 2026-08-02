@@ -4,16 +4,31 @@ import jwt from "jsonwebtoken"
 import type { JwtPayload } from "jsonwebtoken";
 
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
-
-function makeJWT(userID:string, expiresIn: number, secret: string): string{
-    jwt.sign(payload, secret, [options])
+const nowTime = Math.floor(Date.now()/1000)
+export function makeJWT(userID:string, expiresIn: number, secret: string): string{
+    const payload: payload = {
+        iss: "chirp",
+        sub: userID,
+        iat: nowTime,
+        exp:  nowTime + expiresIn
+    }
+    JSON.stringify(payload)
+    return jwt.sign(payload, secret)
 }
+export function validateJWT(tokenString: string, secret: string): string{
+    const response = jwt.verify(tokenString, secret)
+    if(!response){
+        throw new Error(`Invalid or expired token ${response.sub}`)
+    }
+    return JSON.stringify(response)
+}
+
 export async function hashPassword(password: string): Promise<string>{
     const hash = await argon2.hash(password)
     return hash
 }
 export async function checkPasswordHash(password: string, hash: string): Promise<boolean>{
-    const result = await argon2.verify(password, hash)
+    const result = await argon2.verify(hash, password)
     if (result){
         return true
     }else{
