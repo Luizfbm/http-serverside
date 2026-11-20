@@ -2,6 +2,8 @@ import * as argon2 from "argon2"
 import { BadRequestError, Unauthorized, errorHandler} from "../errors.js"
 import jwt from "jsonwebtoken"
 import type { JwtPayload } from "jsonwebtoken";
+import {Request, Response, NextFunction} from "express"
+import {config } from "../config.js"
 
 type payload = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
 const nowTime = Math.floor(Date.now()/1000)
@@ -34,4 +36,13 @@ export async function checkPasswordHash(password: string, hash: string): Promise
     }else{
         throw new Unauthorized("401")
     }
+}
+export function getBearerToken(req: Request): string{
+    const token = req.get("Authorization")
+    if(!token){
+        throw new Error
+    }
+    let tokenClear = token.slice(-8)
+    const valJWT = validateJWT(tokenClear ,config.secretJWT)
+    return valJWT
 }

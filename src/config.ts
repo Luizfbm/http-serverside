@@ -1,5 +1,4 @@
-import express  from "express"
-import {Request , Response, NextFunction } from "express"
+
 import type {MigrationConfig} from "drizzle-orm/migrator"
 import { Forbidden } from "./errors.js"
 
@@ -20,9 +19,10 @@ type DBConfig = {
 
 type APIConfig = {
     fileserverHits: number;
+    secretJWT : string
 };
 
-const envOrThrow = (key: string | undefined) => {
+export const envOrThrow = (key: string | undefined) => {
     if (typeof key !== 'string'){
         throw new Error 
     }
@@ -36,6 +36,7 @@ const forbiddenPlat = (key: string | undefined) => {
 }
 const dbValidate = envOrThrow(process.env.DB_URL)
 const acessValidate = forbiddenPlat(process.env.PLATAFORM)
+const secret = envOrThrow(process.env.SECRET)
 
 export const config : DBConfig & APIConfig = {
     db: {
@@ -44,6 +45,7 @@ export const config : DBConfig & APIConfig = {
         acess : acessValidate
     },
     fileserverHits: 0,
+    secretJWT : secret
 }
 
 
